@@ -219,11 +219,22 @@ const TRACKS = [
     ],
   },
   {
-    id:"hosa", name:"HOSA",
+    id:"hosa", name:"HOSA — Sports Medicine",
     examDate:"", examTime:"",
-    examInfo:[],
-    blurb:"Dates TBD. Tell me which HOSA events she's entering and I'll add the units, weights and quiz links here.",
-    units:[],
+    examInfo:[
+      ["50 questions","Multiple choice · 60 min · Round 1 written test"],
+      ["Round 2","Skills scenario · secret topic, revealed at the event"],
+      ["References","Beam (Taping/Wrapping/Bracing) · France (Sports Medicine & Athletic Training) · Prentice (Role of the Athletic Trainer)"],
+    ],
+    blurb:"HOSA Canada Spring Leadership Conference, Toronto. Test plan per the published Sports Medicine guidelines — confirm the SLC date and any Canada-specific updates with her chapter advisor, then set it with 'Change exam date' below and the timeline builds itself.",
+    units:[
+      {id:"hosa-prev",  n:1, name:"Injury / Illness Prevention and Wellness Promotion", w:[30,30], q:null},
+      {id:"hosa-exam",  n:2, name:"Examination, Evaluation, and Assessment",             w:[30,30], q:null},
+      {id:"hosa-emerg", n:3, name:"Immediate and Emergency Care",                       w:[16,16], q:null},
+      {id:"hosa-ther",  n:4, name:"Therapeutic Intervention",                           w:[16,16], q:null},
+      {id:"hosa-admin", n:5, name:"Healthcare Administration and Professional Responsibilities", w:[8,8], q:null},
+      {id:"hosa-skills",n:6, name:"Round 2 — Skills Practice (taping, wrapping, bracing)", q:null},
+    ],
   },
 ];
 
@@ -449,15 +460,19 @@ function renderUnits(){
         <div>
           <div class="unit-num">Unit ${u.n}</div>
           <div class="unit-name">${esc(u.name)}${dueReview?'<span class="due">review due</span>':""}</div>
-          ${u.w?`<span class="weight">${u.w[0]}–${u.w[1]}% of exam</span>`:""}
+          ${u.w?`<span class="weight">${u.w[0]===u.w[1]?u.w[0]+"%":u.w[0]+"–"+u.w[1]+"%"} of exam</span>`:""}
         </div>
         <select class="status" data-phase="${u.id}">
           ${["todo","studying","review","done"].map(p=>`<option value="${p}" ${st.phase===p?"selected":""}>${{todo:"Not started",studying:"Studying",review:"Reviewing",done:"Complete"}[p]}</option>`).join("")}
         </select>
       </div>
       <div class="row" style="margin:10px 0">
-        <a class="btn small" href="${QUIZ}/#/unit/${u.id}">Generate quiz</a>
-        <a class="btn small ghost" href="${QUIZ}/#/notes/${u.id}">Review notes</a>
+        ${(()=>{ const qid=(u.q===undefined?u.id:u.q);
+          return qid
+            ? `<a class="btn small" href="${QUIZ}/#/unit/${qid}">Generate quiz</a>
+               <a class="btn small ghost" href="${QUIZ}/#/notes/${qid}">Review notes</a>`
+            : `<span class="muted" style="font-size:13px">Quiz bank not built yet.</span>`;
+        })()}
       </div>
       <label class="check ${st.notes?"done":""}"><input type="checkbox" data-notes="${u.id}" ${st.notes?"checked":""}><span>Review notes read</span></label>
       <label class="check ${st.quiz?"done":""}"><input type="checkbox" data-quiz="${u.id}" ${st.quiz?"checked":""}><span>Practice quiz taken${best!==null?` (best: ${best}%)`:""}</span></label>
