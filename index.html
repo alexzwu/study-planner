@@ -508,7 +508,6 @@ function renderExam(){
 /* ================= Events ================= */
 document.addEventListener("change",e=>{
   const el=e.target;
-  if(el.dataset.tab){ S.active=el.dataset.tab; save(); render(); return; }
   if(el.dataset.phase){
     const st=uState(el.dataset.phase), was=st.phase;
     st.phase=el.value;
@@ -525,6 +524,7 @@ document.addEventListener("change",e=>{
 });
 document.addEventListener("click",e=>{
   const el=e.target;
+  if(el.dataset.tab){ S.active=el.dataset.tab; save(); render(); return; }
   if(el.dataset.addscore){
     const uid=el.dataset.addscore, inp=$("score-"+uid), v=parseInt(inp.value,10);
     if(isNaN(v)||v<0||v>100){ inp.focus(); return; }
