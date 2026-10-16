@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1d4ed8">
+<title>Study Planner</title>
+<style>
+  :root{
+    --bg:#f6f8fc; --card:#ffffff; --ink:#16213a; --muted:#68738a;
+    --accent:#1d4ed8; --accent-soft:#e3ecff; --good:#15803d; --good-soft:#e2f4e8;
+    --warn:#b45309; --warn-soft:#fdf0dc; --line:#e4e9f2; --radius:14px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45; padding-bottom:64px;}
+  .wrap{max-width:760px; margin:0 auto; padding:16px 14px 0;}
+  .tabs{display:flex; gap:8px; overflow-x:auto; margin-bottom:12px; padding-bottom:4px;}
+  .tab{flex:none; border:1px solid var(--line); background:#fff; border-radius:99px;
+    padding:8px 15px; font-size:14px; font-weight:600; color:var(--muted); cursor:pointer;}
+  .tab.active{background:var(--accent); border-color:var(--accent); color:#fff;}
+  header.hero{background:linear-gradient(135deg,#1d4ed8,#3b82f6); color:#fff; border-radius:18px;
+    padding:22px 20px 18px; margin-bottom:14px; box-shadow:0 6px 18px rgba(29,78,216,.25);}
+  header.hero h1{margin:0 0 2px; font-size:21px; letter-spacing:.2px;}
+  header.hero .sub{opacity:.85; font-size:13.5px;}
+  .countdown{display:flex; gap:14px; margin-top:14px; align-items:baseline;}
+  .countdown .big{font-size:44px; font-weight:800; line-height:1;}
+  .countdown .lbl{font-size:13px; opacity:.85;}
+  .progress{margin-top:14px;}
+  .progress .bar{height:10px; background:rgba(255,255,255,.28); border-radius:99px; overflow:hidden;}
+  .progress .fill{height:100%; background:#fff; border-radius:99px; width:0%; transition:width .4s;}
+  .progress .txt{font-size:12.5px; opacity:.9; margin-top:6px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px; margin-bottom:12px;}
+  .card h2{margin:0 0 10px; font-size:16px;}
+  .card h3{margin:0 0 6px; font-size:15px;}
+  .muted{color:var(--muted); font-size:13px;}
+  .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+  .btn{display:inline-block; border:1px solid var(--accent); background:var(--accent); color:#fff;
+    border-radius:10px; padding:8px 13px; font-size:14px; text-decoration:none; cursor:pointer;}
+  .btn.ghost{background:#fff; color:var(--accent);}
+  .btn.small{padding:6px 10px; font-size:13px;}
+  select.status{border:1px solid var(--line); border-radius:9px; padding:7px 9px; font-size:14px; background:#fff;}
+  .unit{border-left:5px solid #cbd5e1;}
+  .unit.st-studying{border-left-color:var(--accent);}
+  .unit.st-review{border-left-color:var(--warn);}
+  .unit.st-done{border-left-color:var(--good); background:linear-gradient(0deg,var(--good-soft),#fff 70%);}
+  .unit-top{display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap;}
+  .unit-num{font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.6px;}
+  .unit-name{font-size:16.5px; font-weight:700; margin:2px 0 4px;}
+  .weight{display:inline-block; background:var(--accent-soft); color:var(--accent); font-size:12px;
+    font-weight:700; border-radius:99px; padding:2px 10px;}
+  .due{display:inline-block; background:var(--warn-soft); color:var(--warn); font-size:12px;
+    font-weight:700; border-radius:99px; padding:2px 10px; margin-left:6px;}
+  .check{display:flex; align-items:center; gap:9px; padding:7px 0; font-size:14px;}
+  .check input{width:19px; height:19px; accent-color:var(--accent);}
+  .check.done span{color:var(--muted); text-decoration:line-through;}
+  .rev-item{display:flex; align-items:center; gap:9px; padding:6px 0; font-size:14px;}
+  .rev-item input{width:19px; height:19px; accent-color:var(--warn);}
+  .rev-item .d{font-weight:600;}
+  .rev-item.overdue .d{color:#b91c1c;}
+  .quizlog{font-size:13px; color:var(--muted); margin-top:6px;}
+  .quizlog b{color:var(--ink);}
+  .scoreform{display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;}
+  .scoreform input{border:1px solid var(--line); border-radius:9px; padding:7px 9px; font-size:14px; width:110px;}
+  .tl-block{display:flex; gap:12px; padding:10px 0; border-top:1px solid var(--line); align-items:flex-start;}
+  .tl-block:first-of-type{border-top:none;}
+  .tl-block input[type=checkbox]{width:20px; height:20px; margin-top:2px; accent-color:var(--good); flex:none;}
+  .tl-dates{font-size:12.5px; color:var(--muted); white-space:nowrap;}
+  .tl-label{font-size:14.5px;}
+  .tl-label.done{color:var(--muted); text-decoration:line-through;}
+  .tl-kind{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px;
+    border-radius:6px; padding:2px 7px; margin-right:6px;}
+  .k-learn{background:var(--accent-soft); color:var(--accent);}
+  .k-review{background:var(--warn-soft); color:var(--warn);}
+  .k-final{background:var(--good-soft); color:var(--good);}
+  .examgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .examgrid .stat{background:var(--bg); border-radius:10px; padding:10px 12px;}
+  .examgrid .stat b{display:block; font-size:17px;}
+  .examgrid .stat span{font-size:12.5px; color:var(--muted);}
+  .ms-item{display:flex; justify-content:space-between; gap:10px; padding:8px 0; border-top:1px solid var(--line); font-size:14px;}
+  .ms-item:first-of-type{border-top:none;}
+  .foot{font-size:12px; color:var(--muted); text-align:center; margin-top:18px;}
+  .foot button{background:none; border:none; color:var(--muted); text-decoration:underline; font-size:12px; cursor:pointer; margin:0 4px;}
+  dialog{border:1px solid var(--line); border-radius:14px; padding:20px; max-width:340px; width:90vw;}
+  dialog input{border:1px solid var(--line); border-radius:9px; padding:8px 10px; font-size:15px; width:100%; margin:8px 0 12px;}
+  dialog::backdrop{background:rgba(0,0,0,.35);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="tabs" id="tabs"></div>
+
+  <header class="hero">
+    <h1 id="trackName">Study Planner</h1>
+    <div class="sub" id="trackSub"></div>
+    <div class="countdown" id="countdownBox">
+      <div><div class="big" id="daysLeft">–</div><div class="lbl" id="daysLbl">days to go</div></div>
+      <div class="lbl" id="targetLbl"></div>
+    </div>
+    <div class="progress">
+      <div class="bar"><div class="fill" id="progFill"></div></div>
+      <div class="txt" id="progTxt"></div>
+    </div>
+  </header>
+
+  <div class="card" id="upNextCard">
+    <h2>Up next</h2>
+    <div id="upNext" class="muted">Loading…</div>
+  </div>
+
+  <div class="card" id="msCard" style="display:none">
+    <h2>Milestones</h2>
+    <div id="milestones"></div>
+  </div>
+
+  <div class="card">
+    <h2 id="unitsH">Units</h2>
+    <div id="units"></div>
+  </div>
+
+  <div class="card" id="tlCard">
+    <h2>Study timeline <span class="muted" style="font-weight:400">· auto-built from today</span></h2>
+    <div class="muted" style="margin-bottom:8px">Learn each unit in order, then a full review pass, then timed practice in the final stretch. Tick blocks off as you finish them.</div>
+    <div id="timeline"></div>
+  </div>
+
+  <div class="card" id="examCard">
+    <h2>Exam day</h2>
+    <div class="examgrid" id="examInfo"></div>
+    <p class="muted" style="margin:10px 0 0" id="examBlurb"></p>
+  </div>
+
+  <div class="foot">
+    Data saves on this device only.
+    <button id="dateBtn">Change exam date</button> ·
+    <button id="resetBtn">Reset this track</button>
+  </div>
+</div>
+
+<dialog id="dateDlg">
+  <h3 style="margin-top:0">Exam date</h3>
+  <div class="muted">If the date moves, update it here and the timeline rebuilds. Clear it if the date is TBD.</div>
+  <input type="date" id="dateInput">
+  <div class="row"><button class="btn" id="dateSave">Save</button>
+  <button class="btn ghost" id="dateClear">TBD</button>
+  <button class="btn ghost" id="dateCancel">Cancel</button></div>
+</dialog>
+
+<script>
+"use strict";
+/* ================= Tracks ================= */
+const QUIZ = "https://alexzwu.github.io/erica-quiz-generator";
+const TRACKS = [
+  {
+    id:"apmicro", name:"AP Microeconomics",
+    examDate:"2027-05-04", examTime:"12:00 PM",
+    examInfo:[
+      ["60 questions","Multiple choice · 70 min · ~67% of score"],
+      ["3 questions","Free response · 60 min incl. 10-min reading · ~33%"],
+      ["1 long FRQ","10 points · usually graphing + explanation"],
+      ["2 short FRQs","5 points each"],
+    ],
+    blurb:"Hybrid digital: read MCQ and FRQ prompts in Bluebook, handwrite FRQ answers in the paper booklet. Practice shifting between screen and paper graphs before exam day.",
+    units:[
+      {id:"apmicro-basics",        n:1, name:"Basic Economic Concepts",                w:[12,15]},
+      {id:"apmicro-supply-demand", n:2, name:"Supply and Demand",                      w:[20,25]},
+      {id:"apmicro-cost-perfect",  n:3, name:"Production, Cost & Perfect Competition", w:[22,25]},
+      {id:"apmicro-imperfect",     n:4, name:"Imperfect Competition",                  w:[15,22]},
+      {id:"apmicro-factors",       n:5, name:"Factor Markets",                         w:[10,13]},
+      {id:"apmicro-market-failure",n:6, name:"Market Failure & the Role of Government",w:[8,13]},
+    ],
+  },
+  {
+    id:"apstats", name:"AP Statistics",
+    examDate:"2027-05-11", examTime:"12:00 PM",
+    examInfo:[
+      ["40 questions","Multiple choice · 90 min · 50% of score"],
+      ["6 questions","Free response · 90 min · 50% of score"],
+      ["5 short FRQs","Short-answer problems"],
+      ["1 investigative","Extended investigative task"],
+    ],
+    blurb:"Confirm the exact format, start time and calculator policy with your AP coordinator — published session times don't replace your school's directions.",
+    units:[
+      {id:"apstats-onevar",  n:1, name:"Exploring One-Variable Data",  w:[15,23]},
+      {id:"apstats-twovar",  n:2, name:"Exploring Two-Variable Data",  w:[5,7]},
+      {id:"apstats-collect",  n:3, name:"Collecting Data",              w:[12,15]},
+      {id:"apstats-prob",    n:4, name:"Probability & Random Variables",w:[10,20]},
+      {id:"apstats-sampling",n:5, name:"Sampling Distributions",        w:[7,12]},
+      {id:"apstats-prop",    n:6, name:"Inference for Proportions",    w:[7,12]},
+      {id:"apstats-means",   n:7, name:"Inference for Means",          w:[7,12]},
+      {id:"apstats-chisq",   n:8, name:"Chi-Square Inference",         w:[2,6]},
+      {id:"apstats-slopes",  n:9, name:"Inference for Slopes",         w:[2,6]},
+    ],
+  },
+  {
+    id:"deca", name:"DECA — Business Admin Core",
+    examDate:"2026-11-03", examTime:"",
+    examInfo:[
+      ["100 questions","Multiple choice · 70 min"],
+      ["Gates regionals","Score decides the regionals path"],
+    ],
+    milestones:[
+      {date:"2027-01-07", label:"Written entry due — 20-page BOR report via JudgePro"},
+    ],
+    blurb:"Nov 3 is the 100-question Business Administration Core exam. After that, the written entry (max 20 numbered pages + 15-min presentation) is due Jan 7.",
+    units:[
+      {id:"deca-accounting",n:1,name:"Accounting Basics"},{id:"deca-comm",n:2,name:"Communication Skills"},
+      {id:"deca-customer",n:3,name:"Customer Relations"},{id:"deca-econ",n:4,name:"Economics"},
+      {id:"deca-entrepreneurship",n:5,name:"Entrepreneurship"},{id:"deca-eq",n:6,name:"Emotional Intelligence"},
+      {id:"deca-finance",n:7,name:"Financial Analysis"},{id:"deca-hospitality",n:8,name:"Hospitality Basics"},
+      {id:"deca-hr",n:9,name:"Human Resources Management"},{id:"deca-infomgmt",n:10,name:"Information Management"},
+      {id:"deca-law",n:11,name:"Business Law"},{id:"deca-marketing",n:12,name:"Marketing"},
+      {id:"deca-math",n:13,name:"Basic Math Skills for Business"},{id:"deca-operations",n:14,name:"Operations"},
+      {id:"deca-politics",n:15,name:"Politics & Government's Role in Business"},{id:"deca-profdev",n:16,name:"Professional Development"},
+      {id:"deca-strategy",n:17,name:"Strategic Management"},
+    ],
+  },
+  {
+    id:"hosa", name:"HOSA",
+    examDate:"", examTime:"",
+    examInfo:[],
+    blurb:"Dates TBD. Tell me which HOSA events she's entering and I'll add the units, weights and quiz links here.",
+    units:[],
+  },
+];
+
+/* ================= State ================= */
+const LS_KEY = "study-planner-v1";
+function blankTrack(){ return {examDate:null, units:{}, blocks:{}}; }
+let S;
+try { S = JSON.parse(localStorage.getItem(LS_KEY)) || {active:"apmicro", tracks:{}}; }
+catch(e){ S = {active:"apmicro", tracks:{}}; }
+if(!S.tracks) S.tracks = {};
+function T(){ return TRACKS.find(t=>t.id===S.active) || TRACKS[0]; }
+function TS(){ if(!S.tracks[T().id]) S.tracks[T().id]=blankTrack(); return S.tracks[T().id]; }
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(S)); }
+function uState(uid){
+  const ts=TS();
+  if(!ts.units[uid]) ts.units[uid]={phase:"todo",notes:false,quiz:false,scores:[],reviews:[]};
+  return ts.units[uid];
+}
+function examDateStr(){
+  const ts=TS();
+  if(ts.examDate!==null && ts.examDate!==undefined) return ts.examDate;
+  return T().examDate || "";
+}
+
+/* ================= Dates ================= */
+const DAY=86400000;
+function todayMid(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
+function dISO(d){ return d.toISOString().slice(0,10); }
+function parseD(s){ return new Date(s+"T12:00:00"); }
+function fmt(d){ return d.toLocaleDateString("en-US",{month:"short",day:"numeric"}); }
+function fmtFull(d){ return d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}); }
+
+/* next upcoming target: exam date or milestone */
+function nextTarget(){
+  const t=todayMid().getTime(), out=[];
+  const ed=examDateStr();
+  if(ed && parseD(ed).getTime()>=t) out.push({date:ed, label:"Exam day", kind:"exam"});
+  (T().milestones||[]).forEach(m=>{ if(parseD(m.date).getTime()>=t) out.push({date:m.date,label:m.label,kind:"milestone"}); });
+  out.sort((a,b)=>a.date<b.date?-1:1);
+  return out[0]||null;
+}
+/* date the timeline builds toward */
+function planEnd(){
+  const t=todayMid().getTime();
+  const ed=examDateStr();
+  if(ed && parseD(ed).getTime()>t) return ed;
+  const ms=(T().milestones||[]).filter(m=>parseD(m.date).getTime()>t).sort((a,b)=>a.date<b.date?-1:1);
+  return ms.length? ms[ms.length-1].date : null;
+}
+
+/* ================= Timeline ================= */
+function distribute(total, weights){
+  // largest remainder, min 1 each (caller guarantees total>=weights.length)
+  const sum=weights.reduce((a,b)=>a+b,0)||1;
+  const raw=weights.map(w=>total*w/sum);
+  const base=raw.map(x=>Math.max(1,Math.floor(x)));
+  let rem=total-base.reduce((a,b)=>a+b,0);
+  const order=raw.map((x,i)=>[x-Math.floor(x),i]).sort((a,b)=>b[0]-a[0]);
+  let k=0;
+  while(rem>0){ base[order[k%order.length][1]]++; rem--; k++; }
+  return base;
+}
+function chunkInto(arr,k){
+  const out=[], n=arr.length; k=Math.min(k,n);
+  let i=0;
+  for(let g=0; g<k; g++){
+    const size=Math.ceil((n-i)/(k-g));
+    out.push(arr.slice(i,i+size)); i+=size;
+  }
+  return out;
+}
+function groupLabel(units, kind){
+  const word = kind==="learn"?"learn":kind==="review"?"review + FRQ":"";
+  if(units.length===1) return `Unit ${units[0].n} — ${word}: ${units[0].name}`.replace(" — :",":").trim();
+  const a=units[0].n, b=units[units.length-1].n;
+  return `Units ${a}–${b} — ${word}: `+units.map(u=>u.name).join(", ");
+}
+function buildTimeline(){
+  const endStr=planEnd();
+  if(!endStr || !T().units.length) return [];
+  const D=Math.max(1, Math.round((parseD(endStr)-todayMid())/DAY));
+  const units=T().units, n=units.length;
+  if(D<=3){
+    return [{id:"final:cram", kind:"final", label:"Final review — exam is days away",
+      days:D, start:+todayMid(), end:+(new Date(todayMid().getTime()+(D-1)*DAY)),
+      note:"Light review only: formulas, graphs, and your weakest units. Sleep well the night before."}];
+  }
+  const weights=units.map(u=>u.w? (u.w[0]+u.w[1])/2 : 1);
+  const blocks=[]; let cur=todayMid();
+  const push=(kind,label,uids,days,note)=>{
+    const start=new Date(cur), end=new Date(cur.getTime()+(days-1)*DAY);
+    blocks.push({id:kind+":"+uids.map(u=>u.id).join(","), kind, label, days,
+      start:+start, end:+end, note});
+    cur=new Date(cur.getTime()+days*DAY);
+  };
+  const noteL="Read the review notes, then generate quizzes until scores are solid.";
+  const noteR="Re-quiz missed concepts. Do free-response prompts by hand, timed.";
+  const noteF="Timed practice exams under real conditions. Drill only the weakest units.";
+  const fits = (2*n+2) <= D;
+  if(fits){
+    const learnDays=distribute(Math.max(n,Math.round((D-2)*0.7)), weights);
+    const revDays=distribute(Math.max(n,(D-2)-learnDays.reduce((a,b)=>a+b,0)), weights);
+    const finalDays=Math.max(1, D-learnDays.reduce((a,b)=>a+b,0)-revDays.reduce((a,b)=>a+b,0));
+    units.forEach((u,i)=>push("learn",groupLabel([u],"learn"),[u],learnDays[i],noteL));
+    units.forEach((u,i)=>push("review",groupLabel([u],"review"),[u],revDays[i],noteR));
+    push("final","Final stretch — timed practice exams",[],finalDays,noteF);
+  } else {
+    // tight schedule: group units into chunks
+    const finalDays=Math.min(3,Math.max(1,Math.round(D*0.15)));
+    const rest=D-finalDays;
+    const learnB=Math.max(1,Math.round(rest*0.65)), reviewB=Math.max(1,rest-learnB);
+    const lg=chunkInto(units,learnB), rg=chunkInto(units,reviewB);
+    const ld=distribute(learnB, lg.map(g=>g.reduce((a,u)=>a+(u.w?(u.w[0]+u.w[1])/2:1),0)));
+    const rd=distribute(reviewB, rg.map(g=>g.length));
+    lg.forEach((g,i)=>push("learn",groupLabel(g,"learn"),g,ld[i],noteL));
+    rg.forEach((g,i)=>push("review",groupLabel(g,"review"),g,rd[i],noteR));
+    push("final","Final stretch — timed practice",[],finalDays,noteF);
+  }
+  return blocks;
+}
+
+/* ================= Reviews ================= */
+function scheduleReviews(uid){
+  const st=uState(uid), done=new Set(st.reviews.filter(r=>r.done).map(r=>r.date));
+  const t=todayMid().getTime();
+  st.reviews=[3,10,30].map(off=>{
+    const date=dISO(new Date(t+off*DAY));
+    return {date, done:done.has(date)};
+  });
+  save();
+}
+
+/* ================= Render ================= */
+const $=id=>document.getElementById(id);
+
+function render(){
+  renderTabs();
+  const t=T(), ts=TS(), target=nextTarget();
+  $("trackName").textContent=t.name;
+  const ed=examDateStr();
+  $("trackSub").innerHTML = ed
+    ? `Exam: <b>${parseD(ed).toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})}${t.examTime?" · "+t.examTime:""}</b>`
+    : `Exam date: <b>TBD</b>`;
+
+  if(target){
+    const dl=Math.round((parseD(target.date)-todayMid())/DAY);
+    $("daysLeft").textContent=dl;
+    $("daysLbl").textContent="days to go";
+    $("targetLbl").textContent=`${target.label} · ${fmtFull(parseD(target.date))}`;
+    $("countdownBox").style.display="";
+  } else {
+    $("countdownBox").style.display="none";
+  }
+
+  const doneUnits=t.units.filter(u=>uState(u.id).phase==="done").length;
+  const blocks=buildTimeline();
+  const doneBlocks=blocks.filter(b=>ts.blocks[b.id]).length;
+  const pctR=Math.round((t.units.length?doneUnits/t.units.length*0.6:0)+(blocks.length?doneBlocks/blocks.length*0.4:0)*100);
+  $("progFill").style.width=pctR+"%";
+  $("progTxt").textContent = t.units.length
+    ? `${doneUnits} of ${t.units.length} units complete · ${doneBlocks} of ${blocks.length} study blocks done · ${pctR}%`
+    : `No units added yet`;
+
+  renderUpNext(blocks,target);
+  renderMilestones();
+  renderUnits();
+  renderTimeline(blocks);
+  renderExam();
+}
+
+function renderTabs(){
+  $("tabs").innerHTML=TRACKS.map(t=>
+    `<button class="tab ${t.id===S.active?"active":""}" data-tab="${t.id}">${t.name}</button>`).join("");
+}
+
+function renderUpNext(blocks,target){
+  const tm=todayMid().getTime();
+  const active=blocks.find(b=>tm>=b.start&&tm<=b.end&&!TS().blocks[b.id])||blocks.find(b=>!TS().blocks[b.id]);
+  const due=[];
+  T().units.forEach(u=>{ uState(u.id).reviews.forEach(r=>{
+    if(!r.done&&parseD(r.date).getTime()<=tm) due.push({u,r}); }); });
+  let html="";
+  if(active) html+=`<div style="padding:4px 0">📅 <b>${esc(active.label)}</b><br><span class="muted">${fmtFull(new Date(active.start))} → ${fmtFull(new Date(active.end))} · ${esc(active.note||"")}</span></div>`;
+  html+=due.map(d=>`<div style="padding:4px 0">🔁 <b>Review due:</b> Unit ${d.u.n} — ${esc(d.u.name)} <span class="due">due ${d.r.date}</span></div>`).join("");
+  if(!active&&!due.length) html = target
+    ? "All blocks complete. Light review until the date — you've got this."
+    : "No upcoming dates on this track.";
+  $("upNext").innerHTML=html;
+}
+
+function renderMilestones(){
+  const ms=T().milestones||[];
+  $("msCard").style.display=ms.length?"":"none";
+  const tm=todayMid().getTime();
+  $("milestones").innerHTML=ms.map(m=>{
+    const dl=Math.round((parseD(m.date)-tm)/DAY);
+    const chip=dl>=0?`<span class="weight">${dl}d left</span>`:`<span class="due">passed</span>`;
+    return `<div class="ms-item"><span>${esc(m.label)}<br><span class="muted">${fmtFull(parseD(m.date))}</span></span>${chip}</div>`;
+  }).join("");
+}
+
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function renderUnits(){
+  const tm=todayMid().getTime();
+  const us=T().units;
+  $("unitsH").innerHTML = us.length? `Units <span class="muted" style="font-weight:400">· in exam order</span>` : `Units`;
+  if(!us.length){
+    $("units").innerHTML=`<div class="muted">${esc(T().blurb)}</div>`;
+    return;
+  }
+  $("units").innerHTML=us.map(u=>{
+    const st=uState(u.id);
+    const dueReview=st.reviews.some(r=>!r.done&&parseD(r.date).getTime()<=tm);
+    const best=st.scores.length?Math.max(...st.scores.map(s=>s.score)):null;
+    const revHtml=st.reviews.length? st.reviews.map((r,i)=>{
+      const overdue=!r.done&&parseD(r.date).getTime()<tm;
+      return `<label class="rev-item ${overdue?"overdue":""}"><input type="checkbox" data-rev="${u.id}:${i}" ${r.done?"checked":""}><span class="d">${r.date}</span><span class="muted">${overdue?"overdue":"spaced review"}</span></label>`;
+    }).join("") : `<div class="muted" style="font-size:13px">Mark the unit complete to auto-schedule spaced reviews.</div>`;
+    const logHtml=st.scores.length?`<div class="quizlog">Quiz scores: ${st.scores.map(s=>`<b>${s.score}%</b> <span>(${s.date})</span>`).join(" · ")}</div>`:"";
+    return `<div class="card unit st-${st.phase}" style="margin-bottom:10px">
+      <div class="unit-top">
+        <div>
+          <div class="unit-num">Unit ${u.n}</div>
+          <div class="unit-name">${esc(u.name)}${dueReview?'<span class="due">review due</span>':""}</div>
+          ${u.w?`<span class="weight">${u.w[0]}–${u.w[1]}% of exam</span>`:""}
+        </div>
+        <select class="status" data-phase="${u.id}">
+          ${["todo","studying","review","done"].map(p=>`<option value="${p}" ${st.phase===p?"selected":""}>${{todo:"Not started",studying:"Studying",review:"Reviewing",done:"Complete"}[p]}</option>`).join("")}
+        </select>
+      </div>
+      <div class="row" style="margin:10px 0">
+        <a class="btn small" href="${QUIZ}/#/unit/${u.id}">Generate quiz</a>
+        <a class="btn small ghost" href="${QUIZ}/#/notes/${u.id}">Review notes</a>
+      </div>
+      <label class="check ${st.notes?"done":""}"><input type="checkbox" data-notes="${u.id}" ${st.notes?"checked":""}><span>Review notes read</span></label>
+      <label class="check ${st.quiz?"done":""}"><input type="checkbox" data-quiz="${u.id}" ${st.quiz?"checked":""}><span>Practice quiz taken${best!==null?` (best: ${best}%)`:""}</span></label>
+      ${logHtml}
+      <div class="scoreform">
+        <input type="number" min="0" max="100" placeholder="Quiz score %" id="score-${u.id}">
+        <button class="btn small ghost" data-addscore="${u.id}">Log score</button>
+      </div>
+      <div style="margin-top:8px"><div class="muted" style="font-size:12.5px;font-weight:700;margin-bottom:2px">SPACED REVIEWS</div>${revHtml}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderTimeline(blocks){
+  const tm=todayMid().getTime();
+  if(!blocks.length){
+    $("tlCard").style.display="none";
+    return;
+  }
+  $("tlCard").style.display="";
+  const byMonth={};
+  blocks.forEach(b=>{
+    const m=new Date(b.start).toLocaleDateString("en-US",{month:"long",year:"numeric"});
+    (byMonth[m]=byMonth[m]||[]).push(b);
+  });
+  $("timeline").innerHTML=Object.entries(byMonth).map(([m,bs])=>
+    `<div class="muted" style="font-weight:700;font-size:13px;margin:12px 0 2px">${m}</div>`+
+    bs.map(b=>{
+      const done=!!TS().blocks[b.id];
+      const live=tm>=b.start&&tm<=b.end&&!done;
+      return `<div class="tl-block">
+        <input type="checkbox" data-block="${esc(b.id)}" ${done?"checked":""}>
+        <div><span class="tl-kind k-${b.kind}">${b.kind==="learn"?"Learn":b.kind==="review"?"Review":"Final"}</span><span class="tl-label ${done?"done":""}"><b>${esc(b.label)}</b>${live?' <span class="due">now</span>':""}</span>
+        <div class="tl-dates">${fmtFull(new Date(b.start))} → ${fmtFull(new Date(b.end))} · ${b.days}d</div>
+        <div class="muted" style="font-size:12.5px">${esc(b.note||"")}</div></div>
+      </div>`;
+    }).join("")
+  ).join("");
+}
+
+function renderExam(){
+  const t=T();
+  $("examInfo").innerHTML=t.examInfo.map(([b,s])=>`<div class="stat"><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join("");
+  $("examBlurb").textContent=t.blurb||"";
+  $("examCard").style.display=(t.examInfo.length||t.blurb)?"":"none";
+}
+
+/* ================= Events ================= */
+document.addEventListener("change",e=>{
+  const el=e.target;
+  if(el.dataset.tab){ S.active=el.dataset.tab; save(); render(); return; }
+  if(el.dataset.phase){
+    const st=uState(el.dataset.phase), was=st.phase;
+    st.phase=el.value;
+    if(el.value==="done"&&was!=="done") scheduleReviews(el.dataset.phase);
+    save(); render();
+  }
+  if(el.dataset.notes!==undefined){ uState(el.dataset.notes).notes=el.checked; save(); render(); }
+  if(el.dataset.quiz!==undefined){ uState(el.dataset.quiz).quiz=el.checked; save(); render(); }
+  if(el.dataset.rev){
+    const [uid,i]=el.dataset.rev.split(":");
+    uState(uid).reviews[+i].done=el.checked; save(); render();
+  }
+  if(el.dataset.block){ TS().blocks[el.dataset.block]=el.checked; save(); render(); }
+});
+document.addEventListener("click",e=>{
+  const el=e.target;
+  if(el.dataset.addscore){
+    const uid=el.dataset.addscore, inp=$("score-"+uid), v=parseInt(inp.value,10);
+    if(isNaN(v)||v<0||v>100){ inp.focus(); return; }
+    const st=uState(uid);
+    st.scores.push({date:dISO(todayMid()),score:v});
+    st.quiz=true; save(); render();
+  }
+  if(el.id==="resetBtn"&&confirm(`Reset all progress for ${T().name}?`)){
+    S.tracks[T().id]=blankTrack(); save(); render();
+  }
+  if(el.id==="dateBtn"){ $("dateInput").value=examDateStr(); $("dateDlg").showModal(); }
+  if(el.id==="dateCancel") $("dateDlg").close();
+  if(el.id==="dateClear"){ TS().examDate=""; save(); $("dateDlg").close(); render(); }
+  if(el.id==="dateSave"){ TS().examDate=$("dateInput").value||""; save(); $("dateDlg").close(); render(); }
+});
+
+render();
+</script>
+</body>
+</html>
